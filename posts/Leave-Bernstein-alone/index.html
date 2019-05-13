@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+	
+<!-- Basic information about this page -->
+<meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/assets/img/fav.ico">
+<title>
+	
+		Leave Bernstein alone! ::
+	
+	Silur.me - The problem starts when reality becomes mutable
+</title>
+
+<!-- Meta tag looking for mobile devices -->
+<meta name="viewport" content="initial-scale=1.5">
+<meta name="theme-color" content="#232323">
+
+<!-- Good information about this page -->
+<meta name="description" content="On how ristretto addressed a problem that we intentionally fell into">
+<meta name="keywords" content="compsci, crypto, blockchain, dlt, p2p, ristretto, curve25519, cofactor, order, prime">
+<meta name="author" content="Silur.me">
+
+<!-- Feed links -->
+<link rel="alternate" type="application/rss+xml" title="Silur.me's RSS Feed" href="//rss.xml">
+<link rel="alternate" type="application/atom+xml" title="Silur.me's Atom Feed" href="//atom.xml">
+
+<!-- Style and scripts files -->
+<link rel="stylesheet" type="text/css" href="/assets/css/style.css">
+
+<!-- Extra information about this page -->
+<link rel="license" type="text/plain" src="/assets/LICENSE">
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+      tex2jax: {
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+        inlineMath: [['$','$']]
+      }
+    });
+  </script>
+  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script> 
+<!-- Facebook, Linkedin, Reddit and many others Open Graph -->
+<meta property="og:site_name" content="Silur.me" />
+<meta property="og:title" content="Silur.me - The problem starts when reality becomes mutable" />
+<meta property="og:type" content="website" />
+<meta property="og:description" content="Rants about cryptography and other science stuff" />
+<meta property="og:url" content="http://localhost:4000" />
+<meta property="og:image:type" content="image/png" /> <!-- less than 5mB -->
+<meta property="og:image:width" content="600" />
+<meta property="og:image:height" content="315" />
+<meta property="og:image" content="/assets/img/cover.svg" />
+<meta property="og:locale" content="en" />
+<meta property="og:locale:alternate" content="" />
+<meta property="fb:page_id" content="" />
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="Silur.me - The problem starts when reality becomes mutable" />
+<meta name="twitter:description" content="Rants about cryptography and other science stuff" />
+<meta name="twitter:url" content="http://localhost:4000" />
+<meta name="twitter:image" content="/assets/img/cover.svg" />
+<meta name="twitter:author" content="" />
+
+<!-- Linkedin OGP cards -->
+<meta property="og:image" content="/assets/img/cover.svg" />
+<meta property="og:image:width" content="180" />
+<meta property="og:image:height" content="110" />
+
+<!-- Google+ OGP cards -->
+<meta itemprop="name" content="Silur.me - The problem starts when reality becomes mutable" />
+<meta itemprop="author" content="" />
+<meta itemprop="description" content="Rants about cryptography and other science stuff" />
+<meta itemprop="image" content="/assets/img/cover.svg" />
+
+
+
+
+	<body>
+		<header>
+  <pre class="ascii logo">
+                                                                                                                                                                            
+                                                                                                                                                                            
+                                                                                                                                                                            
+                                                                                                    `     `#@`                                                              
+                                                                                                  `'@@#@@@@@#.                                                              
+                                                                                              .+@@@@@@@@@@@`                                                                
+                                                                                           ,@#@@@@@@@@@@@,                                                                  
+                                                                                      ` ,@@@@@@@@@@@@@@;` `                                                                 
+                                                                                 `   `#@@@@@@@@@@@@@#`                                                                      
+                                                                                   `@#@@@@@@@@@@#@+ `                                                                       
+                                                                                 '@@@#@@@@@@@@@@#                                                                           
+                                                                             `,@@@@@@@@@@@@@@@#+                                                                            
+                                                                            .#@@@@@@@@@@@@@@@@,                                                                             
+                                                                          `#@#@@@@@@@@@@@@@@.                                                                               
+                                                                         :@@@@@@@@@@@@@@#@:                                                                                 
+                                                                        ;#@@@@@@@@@@@@@@@.`                                                                                 
+                                                                `     ,@@@@@@@@@@@@@@@@:                                                                                    
+                                                                     +#@@@@@@@@@@@@@#` `                                                                                    
+                                                                   :@@@#@@@@@@@@@@@.                                                                     `                  
+                                                                  +@@@@@@@@@@@@@@#`                                                              `+@@#@#@:                  
+                                                                 ##@@@@@@@@@@@@@.                                                           `:@@@@@@@@@,``                  
+                                                               ,@@@@@@@@@@@@@@+                                                          `+@@@@#@@@+                        
+                                                              @@@@@@@@@@@@@@@:                                                         ,#@@@@@@@@.                          
+                                                            .@@@@@@@@@@@@@@@``                                                      `#@@@@@@@@@.                            
+                                                           ,@@@@@@@@@@@@@@#                                                       ,@@@@@@@@@#                               
+                                                          ,@@@@@@@@@@@@@@+                                                      .@@@@@@@@;                                  
+                                                         :#@@@@@@@@@@@@@@                     .@,                            `+@#@@@@@@;     `                              
+                                                        #@#@@@@@@@@@@@@#                     `@@;  `:`                     ,@#@@@@@@'`                                      
+                                                      `@@@@@@@@@@@@@@@.    `               ``@@@:  @@`                   ;@@@@@@@@@.                                        
+                                                     `@@#@@@@@@@@@@@#.     '@               @@@@`  @@@`                #@@@@@@@@@#                                          
+                                                   `,@@@@@@@@@@@@@@+      #@,              #@@@@` :@@@@.`           .@@@@@@@@@@@,                                           
+                                                   ,@#@@@@@@@@@@@@,  `   @#; `            ,#@@@@  @@@@@#,         ,@@@@@@@@@#@'                                             
+                                                 `,@@@@@@@@@@@@@@`     .@@#               @@@@@@  @@@@@@@`      ,@@@@@@@@@@@@.                                              
+                                                 .#@@@@@@@@@@@@@      .@@@               #@@@@@@ `@@@@@@#     :@@@#@@@@@@#@;                                                
+                                                `@@@@@@@@@@@@@@      ,@@@`              :#@@@@@@ '@@@@@@+   .@@@@@@@@@@@@,`                                                 
+                                               .@@@@@@@@@@@@@#      ;@@@`              `@@@@@@@@ @@@@@@@`  #@@@@@@@@@@@+`                                                   
+                                              `@@@@@@@@@@@@##      ;#@#:               #@@@@@@@@ @@@@@@@`.#@@@@@@@@@@@``                                                    
+                                              @@@@@@@@@@@@@@      .@@@+               +#@@@@@@@@ @@@@@@@@@#@@@@@@@@@+                                                       
+                                             @@@@@@@@@@@@@@      `@@@@                @#@@@@@@@# @@@@@@@@@@@@@@@@@@;  ` .                                                   
+                                            @@@@@@@@@@@@@+       @@@@`              `;@@@@@@@@@; @@@@@@@@@@@@@@@@@#   :@@@@+                                                
+                                          `@@@@@@@@@@@@@:       +@@#,                @@@@@@@@@@, @@@@@@@@@@@@@@@@@   @@@@@@@@`                                              
+                                          @@@@@@@@@@@@#+       ,@@@@                ;@@@@@ @@@@, @@@@@@@@@@@@@@@'    #@@@@@@@@,`                                            
+                                        `#@@@@@@@@@@@@@        @@@@.                @@@@@+ .@@@` @@@@@@@@@@@@@@.`    @@@@@@@@@@.                                            
+                                        `#@@@@@@@@@@@@.       ;@@@#                '@@@@@`  @@@ `@@@@@@@@@@@@@.      @@@@@@@@@@@#                                           
+                                        @@@@@@@@@@@@@@       `@@@@                 #@@@@+   @@@ `@@@@@@@@@@@@        @@@@@@@@@@@@@                                          
+                                       +@@@@@@@@@@@@@       `+@@@#                ;@@@@@    #@@  @@@@@@@@@@@         @@@@@@@@@@@@@@`                                        
+                                      :#@@@@@@@@@@@@'       `@@@@+                @@@@@@    @@@  @@@@@@@##@          @@@@@@@@@@@@@@@                                        
+                                      @@@@@@@@@@@@@@       `#@@@@.                @@@@@#    @@@. @@@@@@@@@           @@@@@@@@@@@@@@@@                                       
+                                   ` #@@@@@@@@@@@@@`        @@@@@                ,@@@@@`    @@@. @@@@@@@@            @@@@@@@@@@@@@@@@'                                      
+                                    .#@@@@@@@@@@##         +@@@@@                @@@@@@    `@@@. +@@@@@;             @@@@@@@@@@@@@@@@@#                                     
+                                    @@@@@@@@@@@@@,         @@@@@;                @@@@@@    `@@@. ,@@@@,              @@@@@@@@@@@@@@@@@@+                                    
+                                    @@@@@@@@@@@@'         '@@@@@.                @@@@@@    ,@@@#  @##'               @@@@@@@@@@@@@@@@@@@# `                                 
+                                   '@@@@@@@@@@@@          @@@@@@`                @@@@@@    ;@@@@  #@+                @@@@@@@@@@@@@@@@@@@@@                                  
+                                   @@@@@@@@@@@@'         `@@@@@@`                @@@@@.    ;@@@+ `;@                 #@@@@@@@@@@@@@@@@@@#@@                                 
+                                  .@@@@@@@@@@@@          ;@@@@@@                 @@@@#     #@@@,     ,:              @@@@@@ #@@@@@@@@@@@@@@;``                              
+                                  @@@@@@@@@@@@.          @@@@@@@                `'+#'      ;@@@.     @@##`           @@@@@@   @@@@@@@@@@@@@@:`                              
+                                  @@@@@@@@@@@@           @@@@@@@` `     ``  ;#++++#####++'+`  ;      '@@@@@@@@`      @#@@#@    ;@@@@@@@@@@@@@`                              
+                                 +@@@@@@@@@@@,`         ,@@@@@@@:        +##@######@@@@@#@@@##'     ` `:##@@@#@@#@   ` '#@@     :@@@@@@@@@@@#@                              
+                                 @@@@@@@@@@@@           #@@@@@@@#     +++#+##@########@@#@@@#@##@#+`       .#@@@#@@@'`  +#:     `:@@@@@@@@@@@@@,                            
+                                .@@@@@@@@@@@;          `@@@@@@@@@,    ';  .,,,`,`'#'+##+####@@#@#####+.   `  ` @@@@@@@@,          ,@@@@@@@@@@@@@                            
+                                @@@@@@@@@@@@            @@@@@@@@@#                #;`    .+##########@@#;        .#@@#@@.       ```#@#@@@@@@@@@@#                           
+                               `@@@@@@@@@@@.           `@@@@@@@@@.             `+##+         +###@@@@@####;        ,'@@@@@          ;#@@@@@@@@@@@;                          
+                               `@@@@@@@@@@@            ,@@@@#@@@@ @#          `.####       ,   ,####@@@@@@@#' `      ,@#@@@;         '@@@@@@@@@@@@`                         
+                               '@@@@@@@@@@,            #@@@@:@@@+.#@            ###'`      @@@@   +##@@@#@@@##'     ` `:#@@+#         +@@@@@@@@@@@@                         
+  ,                            @@@@@@@@@@@             @@@@. @@@`+@@`         ` ###,       @@@@@   .###@#@@####@     `   @@#@@'        #@@@@@@@@@@@@                        
+  '+                          ;@@@@@@@@@@@`            @@@@  @@@ @@@#           +##.      `@@@@#     :#@#@#######'`  ':   ,@@@@@        ##@@@@@@@@@@:                       
+   +,                         @@@@@@@@@@@@,            @@@@  @@# @@@@`          ;++        @@@@:       #######@##@#  '@@@  ,#@#@@,`      #@@@@@@@@@#@                       
+   `+`                       `@@@@@@@@@@@@@ `  `       @@@@ `@@ #@@@@+           +#       ;@@@@.         #+@#@@@#@#@` ;@@@@@@@@@@@,`      #@@#@@@@@@@@                      
+    ,#``                     '@@@@@@@@@@@@@@;         `@@@'  @# @@#@@@            #       @@@@@.         `+##@@@##@@#;  @@@@@@@@@@@+       +##@@@@@@@@,                     
+     ;#`                     @@@@@@@@@@@@@@@@@,       .@@@. .@. @@@@@@:          `.       @@@@@.           ##@@#@#@@@@'  #@@@@@@@@@@+`      +#@@@@@@@@@                     
+      ;@:`                   @@@@@@@@@@@@@@@@@@@@'`  `;@@@  ,@  @@@@@@@                  ;#@@@@;           +@@@@@#@##@#+  @@@@@@@@@@@+       +@@@@@@@@@;                    
+       @#'                  `@@@@@@@@@@@@@@@@@@##@@@@ +@@@  '@ `@@@@@@@,  `             `@@@@@@#          `##@@#@@@@#@@##`.@@@@@@@@@@@:       +#@@@@@@@@                    
+      `+@@;`                #@@@@@@@@@@@@@@@@@@@@@@@@ +@@@  #' :@@@@#@#@  @@@@'.      ``@@@@@@@+         ###@@@@###@@@@@@# ;@#@@@@@@@@@,       @@@@@@@@@.                   
+        @@@#                @@@@@@@@@@@@@@@@@@@@@@@@@ `@@@  `  #@@@@@@@@; ;#@@@@@;     ++,:,:+@:    ``#@###@@@@@@@@@@@@###+ +@@@@@@@@@@@:`      '@@@@@@@@                   
+         #@#@               @@@@@@@@@@@@@@@@@@@@@@@@@ .@@@     @@@@@#@@@@. @@@@@#@.     ```.+;,.    `@#@@@@@@@@@@@@@@@@@###'` .@@@@@@@@@#,       @@@@@@@@`                  
+          @@#@` `          `@@@@@@@@@@@@@@@@@#@@@@@@+ `@@@     @@@@@@@@@@@.@@@@@@+   .#@@@@@@@@@@:  :##@##@@#@@@@@#@@@@#+###   `;#@@@@@@@@:      `@@@#@@@#                  
+           #@@@,`           @@@@@@@@@@@@#@@@@@@#@@@@,  @@@     @@@@@@@@@@@@@#;#@+  .@#@@@@@@@@@@@@#` :#@@#@@@@@@#####@++++;.      '@@@@@@@@       ,@@@@@@#`                 
+            @@@@'          `@@@@@@#,`      :.    ,     #@@     @@@@@@@@@@#@@.     ;@@@@@@@@@@@@@@@@@` .#@@#######+:               ``@@@@@@@#     ``#@@@@@@.                 
+             #@@@@.```     ,@##@.                      +@@`   `@@@@@@+@#@@@@@#   +@@@@@@@@@@@@@@@@@@@  ,##+#.              , `       #@@@@@@,      `@@@@@@@                 
+              @@@@@+        .;                         `@@.   .@@@@@;` +@@@@#@ `#@@@@@@@@@@@@@@@@@@@@@  +. +@#@@:          @           #@@@@@       ,@@@@@@`                
+               #@@@@@``                                 @@+   ;@@@@@`   ;#@@@+`@@@@@@@@@@@@@@@@@@@@@@@#    #@@@@.          @            @@@@#.      `#@@@@@+                
+                +##@@#+                                 @@#   @@@@@@     #@@@@@@@@@@@@@@@@@@@@@@@@@@@@#+  '@@@@#          .@             @@@@@.       @@@@@@                
+                 '@@@@@@`                               ;#@   #@@@@@      @@'#@@@@@@@@@@@@@@@@@@@@@@@@@@ ;@@@@@`          '@              #@@@@       :@@@@#`               
+                  .@@@@@#:   `                           @@   @@@@@@      `@ @@@@@@@@@@@@@@@@@@@@@@@@@@@,+@@@@+          `@@               #@@@.       @@@@@'               
+                  `.@@@@@@@.`                            `    @@@@@@       @`#@@@@@@@@@@@@@@@@@@@@@@@@@@@,@@##            @@              ` @@@@       :@@@@@               
+                     #@@@@@@@`                                @@@@@#`    ``  #@@@@@@@@@@@@@@@@@@@@@@@@@@' @@#` `         :@:                ,@##`       @@@@@`              
+                     .@@@@@@@@@`                              @@@@@@`        @@@@@@@@@@@@@@@@@@@@@@@@@@@.`,`             @@`                 #@@#        #@@@'              
+                       #@#@@@@@@@``                           @@@@@@,        @@@@@@@@@@@@@@@@@@@@@@@@@@@.        ;:. :`  @#`                  @@#        @@@@@              
+                         ;@@@#@@@@@,                          #@@@@@#        @@@@@@@@@@@@@@@@@@@@@@@@@@@.        @@@@@+ +@@                   '@@+       ;@@@@              
+                         `,@@@@@@@@@@#`                       +@@@@@@        @@@@@@@@@@@@@@@@@@@@@@@@@@@`         @@@@``#@@                    @@@        @@@@;             
+                           ,@@@@@@@@@@@@`                     ,@@@@@@        .@@@@@@@@@@@@@@@@@@@@@@@@@@           @@+`'@@:`                   '@@.       @@@@@             
+                           ``@@@@@@@@@@@@@'`    `              @@@@@@   `    `#@@@@@@@@@@@@@@@@@@@@@@@#@ @@'       ##`.@@@+@,                   @@#       +@@@@             
+                           `` @@@@@@@@@@@@@@@#`                @@@@@@      '' @@@@@@@@@@@@@@@@@@@@@@@@@`'##@ `        #@@#@@@                   +@#       `@@@@             
+                           `   +@@@@@@@@@@@@@@@@@;             @@@@@#    '### `@@@@@@@@@@@@@@@@@@@@@@@@ #@@@'      ``#@@@#@#@@                   @@        #@@@,            
+                                `@@@@@@@@@@@@@@@@@@@'          @@@@@@  ;####@+ +@@@@@@@@@@@@@@@@@@@@@@`+@@@@@      `;@@@@ @@@@#                  #@;       @@@@@            
+                                  #@@@@@@@@@@@@@@@@@@@#@@      ;@@@@#`:#######  @@@@@@@@@@@@@@@@@@@@@, @@@@@@;     `@@@@` .@@@@#                  @@       ;@@@#            
+                                   @@@@@@@@@@@@@@@@@@@@@@@@:    @@@@# ##@###@#+` @@@@@@@@@@@@@@@@@#@```@@@@@@@:    @@@@@   ;@@@@@                 @@       `@@@@            
+                                   `#@@#@@@@@@@@@@@@@@@@@@@@#   @@@@@ ;###@#@##  `#@@@@@@@@@@@@@@@@`   `#@@@@@#@  '@@@@.   `#@@@@'`               .@,       @@@@            
+                                     :@@@@@@@@@@@@@@@@@@@@@@,`  @@@@@ :#@@#@#':    .@@@@@@@@@@@@@'      :@@@@@@+ '#@@@+     .@@@@@                 @#       +@@@`           
+                                       @@@@@@@@@@@@@@@@@#@@.+#@`;@@@@`.#@#+`        `@@@@@@@@@@;`         +@@@  '@@@@@       +@@@@#                #@       '@@@,           
+                                        @@@@@@@@@@@@@@@@#+ ###@#`@@@@  ;+    `         `` `                    #@@@@@.        @@@@@+               .#       `@@@,           
+                                     `#@@@@@@@@@@@@@@@@@`.@@@@@@ @@@@+               +       #'              ,@@@@@@'`        :@@@@#.               @        @@@:           
+                                   '@#@@@@@@@@@@@@@@@@;.#@@@@@@@.+@@@@               ###`+##@@@             +@@@@##@`,         @@@@@@                      ` @@@+           
+                                   @@@@@@@@@@@@@@@@@#.@@#@@@@@@@@ @@@@               ##+,@@@@@.         ` #@@@@@@@# .#@#       #@@@@@#                       @@@@           
+                                   @@@@@@@@@@@@@@@@@@@@@@@@@@@@@` ,@@@`     ``#      +##`@@@@@.      ``@@@@@@@@@@@  @@@@@'     ;@@@@@@`                      @@@@           
+                                   @@@@@@@@@@@@@@@@@@@@@@@@@@.     @@@,     ,##      +@@:@@@@@@`    ,@#@@@@@@@@@@  ,#@@@@#@``  `@@@@@@@                      ,@@@           
+                                  `@@@@@@@@@@#@@@@@@@@@@@@+  `     ;@@@   `+#@#       #::@@@@@@@#,#@@@#@@@@@@@@#   :@@@@@@@@+   @@@@@@@`                      @@@           
+                                `,@@@@@@@@@#+@@@@@@@@@@##`          @@@ ,+##@#:`        @@@@@@@@@@@@@@@@@@@@@#+      ##@@@@@@+  @@@@@@@#                      @@@           
+                                '@@#@@@@#@@@#@@@@@@@@@@,           `:@@' #+###        `+@@@@@@@@@@@@@@@@@@@@@:         @@@@@@@@#@@@@@@##`                     @@@           
+                                @@.   ;@@@@@@@@@@@@@@@`    `,.```.#: @@# :#@#:        .@@@@@@@@@@@@@@@@@@@#+` `,        ,#@#@@@@@@@@@@@@@                     @@@           
+                               ` ``+@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.@#' ###         @@@@@@@@@@@@@@@@@@@@, `#@.   ,#+`   ##@@@@@@@@@@@@@``                   '@@           
+                               '@@@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ @@@ `'         @@@@@@@@@@@@@@@@@@@;    @@     :#@@#.  @@@@@@@@@@@@@+                    :@@`          
+                               @#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#.#@+`         `@@@@@@@@@@@@@@@@@@  #  +@:      @@@@@@, #@@@@@@@@@@@@                    ,@@           
+                              `:#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ +@@`         @@@@@@@@@@@@@@@#@,` @@ +@@       .@@@@@@@ ,@@@@@@@@@@@#                   :@@           
+                                `@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+  @##        ,@@@@@@@@@@@@@@+ ` `@@ '@@.        +@@@@@#@' '@@@@@@@@@@                   ;@@           
+                                  `#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'`   `@@: `     @@@@@@@@@@@#@;   `@@#`,@#+         .@@@@@@@@@ +@@@@@@@@@.                  '@@           
+                                     '@@@@@@@@@@@@@@@@@@@@@@@#@;`        ;#@.    `:@@@@@@@@@@+  `  :### ,@@@           @@@@@@@@@@ '@@@@@@@@#`                 @@@           
+                                        `+@@@@@@@@@@@@@@#@+.              ;@@     @@@#@@@@#`     ;#@@+`:@@@            '@@@@@@@@@@ ;@@@@@@@@                  @@@           
+          `'``                              `` `   `     `                 :@#`  ;#@@@#@.  `   ;@@@@# ;@@@,            `@@@@@@@@@@@ '@@@@@@@`                 @@@           
+            '.                                 `                            .#    :':`      `'@@@@@#`;@@@,              @@@@@@@@@@@'`,@@@@@@;                 @@@           
+            @@;                                                                   `      ,'@@@@@@@: #@@@:               @@@@@@@@@@@@. .@@@@@@                 @@@           
+            :@##                                                                 ```  :+@@@@@@@@, `@@@#;`               @@@@@@@@@@@@@  `@@@@@                 @@@           
+           ``+@@@:                                                              ####@@@@@@@@@@, .@@@#@:  '# `           :@@@@@@@@@@#@#  ,@@@@`                @@@           
+              ###@@`                                                          `,@@@@@@@@@@@@@+;@@@@@@.``@@@@,`           @@@@@@@@@@@@@,  ##@@:                @@@           
+               #@@@@.                                                         `#@@@@@@@@@@@@@@#@@@@@  '@@@@@#,`          @@@@@@@@@@@@@@`  @@@#               .@@@           
+                #@@@@:                                                       `@@@@@@@@@@@@@@@@@@@@'  ;@@@@@@##,          @@@@@@@@@@@@@@@` `@@+               ,@@;           
+                `@@@@@+                                                     ;#@@@@@@@@@@@@@@@@#@@   #@@@@@@@@@@;         +@@@@@@ +@@@@@@@ `.'`               ;@@.           
+                ``@@@@@@,                                                 `@@@@@@@@@@@@@@@@@@@@+    @#@@@@@@@@@@@``      `@@@@@@ ``@@@;#@.``                 ;@@            
+                   @@@@@@@   `                                           '#@@@@@@@@@@@@@@@@@',     `;@@@@@@@@@@@@@` `     @@@@@@+   ;+'##:                   :@@            
+                    #@@@@@@,                                          `+@@#@@@@@@@@@@@@@@#,          +@@@@@@@@@@@@@.      @@@@@@#                            #@@            
+                     #@@#@@@+                                      ``+@@@@@@@@@@@@@#@'.               @@@@@@@@@@@@@@      @@@@@@@                            #@'            
+                      +@@@@@@#`                                  ;'@@@@@@@@@@#@@@@,                   ##@@@@@@@@@@@@      +@@@@@@`                           #@.            
+                       :@@@@@@@#                               '@@#@@@@@#@@@#,                        ##@@@@@@@@@@@'       @@@@@@.                           +@             
+                         @@@@@#@@,                             `;'';;;:                              ,#@@@@@@@@@@@@        #@@@@@#                           ++             
+                          :@@#@@@@+                                                              `  @#@@@@@@@@@@@@,        @@@@@@@                          `++             
+                           #@@@@@@##`                                                             .@@@@@@@@@@@@@@:`        ;@@@@@@                          ,+;             
+                            `#@#@@@@@+       `                                                  .@@@@@@@@@@@@@@#           .@@@@@@                          ;#,             
+                            ` ;@@@@@@@@++                                                     .@@@@@@@@@@@@@@@:            `#@@@@@.                         ++              
+                                ##@@@@@@@##.                                               ;@#@@@@@@@@@@@@@#' `             @@@@@@`                         #;              
+                                  +@@@@@@@@@@,                                           #@@@@@@@@@@@@@@@#+`                @@@@@@.                        .+`              
+                                    ;@@@@@@@@#@;                                     `'@@@@@@@@@@@@@@@@@#                   @@@@@@`                        '+               
+                                    ``#@@@@@@@@@#@,+:`                            .+@@@@@@@@@@@@@@@@@@@.                    +@@@@@`                        +`               
+                                       `@#@@@@@@@@@@@@@@@#',`` `             .;##@@@@@@@@@@@@@@@@@@@@;                      @@@@@@                         `                
+                                        ` :@#@@@@@@@@@@@@@@@#@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@#@; `                      +@@@@@`                                         
+                                           ` ;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@.                          :@@@@@                                          
+                                               `@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@;                              @@@@@                                          
+                                                   `'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@+                                 #@@@@                                          
+                                                     ``;@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@,;.                                    #@@@@                                          
+                                                           :+##@@@@@@@@@@@@@#@@#+``                                          @@@@@                                          
+                                                                   ``;```                                                    #@@@@                                          
+                                                                                                                             @@@@#                                          
+                                                                                                                             @@@@'                                          
+                                                                                                                             @@@@`                                          
+                                                                                                                             @@@@                                           
+                                                                                                                             #@@@                                           
+                                                                                                                             #@@@                                           
+                                                                                                                             #@@#                                           
+                                                                                                                             #@@#                                           
+                                                                                                                             :@@:                                           
+                                                                                                                             #@@.                                           
+                                                                                                                            `;@@                                            
+                                                                                                                             '@@                                            
+                                                                                                                             @@@                                            
+                                                                                                                             @@@                                            
+                                                                                                                             #@@                                            
+                                                                                                                            `+@'                                            
+                                                                                                                             +@:                                            
+                                                                                                                             +#`                                            
+                                                                                                                             #+                                             
+                                                                                                                             #+                                             
+                                                                                                                             #+`                                            
+                                                                                                                            `#;                                             
+                                                                                                                            +#,                                             
+                                                                                                                            ++`                                             
+                                                                                                                            ##                                              
+                                                                                                                            ++`                                             
+                                                                                                                            +'                                              
+                                                                                                                            +,                                              
+                                                                                                                           ::`                                              
+                                                                                                                           +.                                               
+                                                                                                                           +                                                
+                                                                                                                          `+                                                
+
+  </pre>
+	<pre class="ascii name">
+              ██                                                                
+              ██     ████                                                       
+              ██     ████                                                       
+                       ██                                                       
+  ▒█████░   ████       ██      ██    ██   ██░████            ██▓█▒██▒   ░████▒  
+ ████████   ████       ██      ██    ██   ███████            ████████  ░██████▒ 
+ ██▒  ░▒█     ██       ██      ██    ██   ███░               ██░██░██  ██▒  ▒██ 
+ █████▓░      ██       ██      ██    ██   ██                 ██ ██ ██  ████████ 
+ ░██████▒     ██       ██      ██    ██   ██                 ██ ██ ██  ████████ 
+    ░▒▓██     ██       ██      ██    ██   ██                 ██ ██ ██  ██       
+ █▒░  ▒██     ██       ██▒     ██▒  ███   ██          ██     ██ ██ ██  ███░  ▒█ 
+ ████████  ████████    █████   ▓███████   ██          ██     ██ ██ ██  ░███████ 
+ ░▓████▓   ████████    ░████    ▓███░██   ██          ██     ██ ██ ██   ░█████▒ 
+</pre>
+</header>
+
+		<nav>
+	<ul>
+		<li><a href="/#">Home</a></li>
+		<li><a href="/#about">About</a></li>
+		<li><a href="/#contact">Contact</a></li>
+		<li><a href="/#projects">Projects</a></li>
+		<li><a href="/#posts">Posts</a></li>
+	</ul>
+</nav>
+
+		<main>
+			<header>
+	<h1>Leave Bernstein alone!</h1>
+	by 
+	
+	<author><a href="//#silur">silur</a></author>
+	
+</header>
+
+<h1 id="so-what-i-hear-about-curve25519-being-broken">So what I hear about curve25519 being broken?</h1>
+
+<p>A couple of months ago (time of writing is 2019 may) there were some reddit rants about how you can multi-spend in monero because of the cofactors used in the elliptic curve design.
+There were multiple “solutions” to this non-existent (cryptographically) problem, but scientifically the best contribution around this storm was due to Mike Hamburg, who <a href="https://www.shiftleft.org/papers/decaf/decaf.pdf">proposed a new compression method</a> with minimal overhad to form prime-order groups… AGAIN.</p>
+
+<p>See, the problem here is that the cofactor issue was addressed in anctient times by the people who knew where the boundaries of thoughtless optimizations and security are. People tell me the specifications and the mathematics were wrong.</p>
+
+<p><strong>No patrik, p*8 is not a prime!</strong></p>
+
+<p>Most “conventional” cryptographic papers starts with “let p be a prime”.
+Thankfully, the majority of programmers nowadays know what a deadly minefield cryptography can be and don’t go into implementation details (this leads to another problem if done on highlevel API usage).
+My problem here is that most implementors somehow fell into this thousand-year-old trap <strong>again</strong>.
+Operating over prime-order fields is super expensive. This is one reason why we only have “toy” hardware wallets for Monero at HCPP. So coders started to avoid using prime orders (Y U DO DIS??!?!?) and get closer to powers of two to speed up things. How can we get away with this when the base point order is still prime?</p>
+
+<p>The connection between an element’s (especially the generator’s) and the group’s order is not <strong>that</strong> strong. We have Sylows theorem that states that the order of an element must be a divisor of the order of the group which is trivially going to be the same number with prime oder groups (we can’t have order of 1). If we introduce the cofactor to speed up our computations we can use the very same property to make forgery attacks.</p>
+
+<p>However this actually trivial problem was looong addressed, got re-introduced and now re-solved by the community.</p>
+
+<p>Taking the most attacked curve for example, <a href="https://cr.yp.to/ecdh/curve25519-20060209.pdf">curve25519</a>
+It has(?) a cofactor of 8 for the reason given in Theorem 2.1 in the paper.</p>
+
+<p>In Section 3 we have:</p>
+
+<p><em>If the subgroup of $E(F_{p^2})$ generated by the base point $(9; …)$ has non-prime order then the attacker can use the Pohlig-Hellman method to save time in computing discrete logarithms.”</em></p>
+
+<p>There you are, 2005 and one of the most trivial criteria in the history of cryptography satisfied, <strong>PRIME ORDER</strong>.
+This “malleability” hack that super-smart people noticed could have been avoided if people would read and understand the security analysis section. Of course in reality this section was not just simply overlooked (i hope?) but misunderstood.
+In <a href="https://eprint.iacr.org/2005/205.pdf">Menezes’</a> paper we see that if we keep this cofactor small then the situation is not that bad. But this only applies to the small-subgroup attack not the invalid-curve/k-torsion or kangaroo one, which has been addressed by Bernstein’s paper.</p>
+
+<p>Social media scientists got too much into discussing <strong>how</strong> using small cofactors introduce malleability into a scheme and seemingly, in 2019 still nobody considers why we use the freakin` cofactors in the first place.</p>
+
+<p>As I always say, the UX vs security is an eternal war and our work is to have a healthy balance between the two. I am rather fond of having OTP keys in my wallet and make my life as hard as I can to have my privacy, but this whole “extending elliptic curves to have a small cofactor” was a childish and trivial move, driven by “premature optimization” and now the blame has been put to cryptographers.</p>
+
+<p>Don’t get me wrong, I DO support the Decaf method and ristretto groups because I want robust and secure libraries in the industry, I’ll have it “your way” and happily introduce some overhead because someone didn’t implement an algorithm according to the specs :)  Decaf showed us a general methodology to compress edwards and montgomery curve points <em>well</em>, and is still a major academic contribution that I am happy and thankful for.</p>
+
+
+		</main>
+		<footer>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = '';
+    var disqus_config = function () {
+        this.page.identifier = "/posts/Leave-Bernstein-alone/";
+    };
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
+
+</footer>
+
+	</body>
+</html>
