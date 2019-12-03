@@ -6,7 +6,7 @@
 <link rel="icon" type="image/x-icon" href="/assets/img/fav.ico">
 <title>
 	
-		$ cat about ::
+		I don't believe in SGX and TEE ::
 	
 	Silur.me - The problem starts when reality becomes mutable
 </title>
@@ -16,8 +16,8 @@
 <meta name="theme-color" content="#232323">
 
 <!-- Good information about this page -->
-<meta name="description" content="Rants about cryptography and other science stuff">
-<meta name="keywords" content="compsci, crypto, blockchain, dlt, p2p">
+<meta name="description" content="Security trough obscurity is a trend again">
+<meta name="keywords" content="compsci, crypto, blockchain, dlt, p2p, TEE, Intel, SGX, Enclaves">
 <meta name="author" content="Silur.me">
 
 <!-- Feed links -->
@@ -289,67 +289,54 @@
 </nav>
 
 		<main>
-			<h1 id="about">$ cat about</h1>
-<p>An endless void of rants about crypto, privacy, anarchy, decentralization and other hacks by your everyday anarchist scientist.</p>
+			<header>
+	<h1>I don't believe in SGX and TEE</h1>
+	by 
+	
+	<author><a href="//#silur">silur</a></author>
+	
+</header>
 
-<p>Site theme by <a href="https://lampiaosec.github.io">lampiaosec</a></p>
+<p>#So what I hear about Kerckhoff being bullied?</p>
 
-<h1 id="contact">$ cat contact</h1>
+<p>I see this new trend in research where some of my most feared topics in security and cryptography has been “solved” with a catchy whitepaper title, only to realize “it’s one of those SGX bullshits again”. So WTF is TEE and SGX and why I don’t consider it secure? Why do I say it lacks the rigorous requirements of a cryptographic scheme.</p>
 
-<p>Telegram: QEh1b2h1bGk=</p>
+<p>TEE is for Trusted Execution Environment, shortly an isolated blackbox from the CPU especially for security stuff. Intel introduced SGX in 2015 (still an opt-in feature) and made it even more of a blackbox with all the promised “anti-tamper” features.</p>
 
-<p>Email: c2lsdXJAY3J5cHRhbGwuY28=</p>
+<p>I predict <a href="https://it.slashdot.org/story/19/02/12/222254/researchers-use-intel-sgx-to-put-malware-beyond-the-reach-of-antivirus-software?sbsrc=developers">injecting malware into the enclave</a> or <a href="https://www.youtube.com/watch?v=NP7f3M_saUs">bypassing all it’s security features with ROP</a> are only two of many upcomming SGX hacks. The provisioning and a sealing master key is kept on the chip, and all subsequent keys are derived from these (they can’t access urandom). I expect the possibility of private key biases here but ofc not for sure, it’s still a freakin’ blackbox :) Even though it’s super hard and this kind of hardware hacking is out of my league, it’s definitely still possible to sidechannel with physical access and that’s enough for me to rather choose mathematical security assumptions.</p>
 
-<p>Geolocation: SSBzZWUgeW91IGFyZSBhIG1hbiBvZiBjdWx0dXJlIGFzIHdlbGw=</p>
+<p>Some of you may say “but if it comes to physical access to my machine, it’s the same with RSA keys and stuff”. Not really, that’s a very small subset of adversarial behaviour in the “TEE security model”, where you assume that an attacker cannot access the SGX because of…you.
+But what’s with the case of PoET? Game-theoretically the roles change and you become the adversary with physical access to your machine. Well very limited physical access for not everyone has a $60K electromicroscope home but hey as long as it’s possible before the heat death of the universe I’m out.</p>
 
-<h1 id="posts">$ ls posts</h1>
+<p>On defense of Kerckhoff, I feel like we fucked him over, because we put our money on blackboxes again. I mean LITERALLY, because intel is working on a joke called “Proof of Elapsed Time” consensus based on it’s TEE and is building a blockchain.</p>
 
-<ul>
+<p>For the unfamiliar <a href="https://en.wikipedia.org/wiki/Kerckhoffs%27s_principle">Kerckhoff’s principle</a> states that the security of a system should not rely on incomplete knowledge about the system, only of the key. Methodologies and even message lengths in some cases are available for the adversary otherwise you are playing for obscurity.</p>
 
+<p>I know that enterprises like Intel and it’s partners still inherently try to overarchitect securty and it’s intuitive to think obscurity == security for the laymen but please? It’s not like an advanced topic that you have to keep up on iacr for months…</p>
 
-
-<li><a href="/posts/The-exotic-world-of-quantum-crypto/" title="The quantum problem is here, and even if it wouldn't you still want to benefit from it.">The exotic world of post-quantum crypto</a></li>
-
-
-
-
-
-<li><a href="/posts/I-Dont-Believe-In-SGX/" title="Security trough obscurity is a trend again">I don't believe in SGX and TEE</a></li>
-
-
-
-
-
-<li><a href="/posts/Leave-Bernstein-alone/" title="On how ristretto addressed a problem that we intentionally fell into">Leave Bernstein alone!</a></li>
-
-
-
-</ul>
-
-<h1 id="projects">$ ls projects</h1>
-
-<ul>
-
-<li><a href="https://github.com/Silur/ZeroTwo">ZeroTwo</a> - State of the art authentication scheme with the strenght of a Klaxxosaur</li>
-
-<li><a href="https://github.com/Silur/ECVRF">ECVRF</a> - An elliptic curve verifiable random function</li>
-
-<li><a href="https://github.com/Silur/SIS-gadget">SIS-gadget</a> - Joint effort with Matter Labs (https://matter-labs.io/) to make a ZK-friendly hash accumulator </li>
-
-<li><a href="https://github.com/Silur/steganio">Stegan.io</a> - Simple F5 Steganograpy in your browser https://www.stegan.io/</li>
-
-<li><a href="https://eprint.iacr.org/2018/1231"> Post-quantum verifiable random functions from ring signatures</a> - An iacr publication on how to construct quantum-resistant VRFs</li>
-
-<li><a href="https://github.com/Silur/vecna">vecna</a> - A simple tool for Fiat-shamir secret sharing</li>
-
-<li><a href="https://github.com/Silur/libecies">libecies</a> - A minimalistic curve25519 ECIES library for P2P apps</li>
-
-<li><a href="https://github.com/Silur/libstringct">libstringct</a> - RTRS RingCT library based on the research of monero lab https://lab.getmonero.org/</li>
-
-</ul>
 
 		</main>
 		<footer>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = '';
+    var disqus_config = function () {
+        this.page.identifier = "/posts/I-Dont-Believe-In-SGX/";
+    };
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
 
 </footer>
 
