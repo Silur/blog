@@ -6,7 +6,7 @@
 <link rel="icon" type="image/x-icon" href="/assets/img/fav.ico">
 <title>
 	
-		$ cat about ::
+		Modding an APK to disable tracking ::
 	
 	Silur.me - The problem starts when reality becomes mutable
 </title>
@@ -16,8 +16,8 @@
 <meta name="theme-color" content="#232323">
 
 <!-- Good information about this page -->
-<meta name="description" content="Rants about cryptography and other science stuff">
-<meta name="keywords" content="compsci, crypto, blockchain, dlt, p2p">
+<meta name="description" content="How to free your closed-source app from the trinet">
+<meta name="keywords" content="compsci, crypto, blockchain, dlt, p2p, tracking, facebook, google, trinet, android">
 <meta name="author" content="Silur.me">
 
 <!-- Feed links -->
@@ -289,79 +289,212 @@
 </nav>
 
 		<main>
-			<h1 id="about">$ cat about</h1>
-<p>An endless void of rants about crypto, privacy, anarchy, decentralization and other hacks by your everyday anarchist scientist.</p>
+			<header>
+	<h1>Modding an APK to disable tracking</h1>
+	by 
+	
+	<author><a href="//#silur">silur</a></author>
+	
+</header>
 
-<p>Site theme by <a href="https://lampiaosec.github.io">lampiaosec</a></p>
+<h1 id="trinet-tracking-and-play-store">Trinet, tracking and play store</h1>
 
-<h1 id="contact">$ cat contact</h1>
+<p>Marketing people are the worst. They treat customers as their KPI for their paychecks, simple assets you mine
+value from. Your android apps are <strong>swarming</strong> with super-intrusive analytic softwares. Yes, plural, as it’s not
+uncommon for a single apk to contain over 15 different tracking/analytics SDKs… you know just in case.</p>
 
-<p>Telegram: QEh1b2h1bGk=</p>
+<p>Thankfully, tracking malware is banned from F-Droid (where I’m living my android life) but in some cases you JUST
+need that one closed-source app for a bigger reason than your privacy extremism.</p>
 
-<p>Email: c2lsdXJAY3J5cHRhbGwuY28=</p>
+<p>For these cases I documented my steps on how I removed tracking malware from <a href="https://play.google.com/store/apps/details?id=com.hushed.release">Hushed</a>
+using <code class="highlighter-rouge">apktool</code> and a little smali hackery.</p>
 
-<p>Geolocation: SSBzZWUgeW91IGFyZSBhIG1hbiBvZiBjdWx0dXJlIGFzIHdlbGw=</p>
+<h1 id="enumerate-trackers">Enumerate trackers</h1>
 
-<h1 id="posts">$ ls posts</h1>
+<p>I used the excellent exodus privacy tool to get a view how many trackers I had to disable: <a href="https://reports.exodus-privacy.eu.org/en/reports/111965/">https://reports.exodus-privacy.eu.org/en/reports/111965/</a></p>
 
-<ul>
+<p><img src="/assets/img/hushed_exodus.png" alt="hushed exodus report" /></p>
 
+<h1 id="decompile-the-apk-for-modding">Decompile the apk for modding</h1>
 
+<p>Modding apk’s mostly happen by using a combination of <code class="highlighter-rouge">apktool</code> and <code class="highlighter-rouge">bytecode-viewer</code></p>
 
-<li><a href="/posts/Modding-an-apk-to-disable-tracking/" title="How to free your closed-source app from the trinet">Modding an APK to disable tracking</a></li>
+<p>For this project <code class="highlighter-rouge">apktool</code> in itself is enough because we’ll mostly edit manifests and only a small amount of smali (heh :)</p>
 
+<p>In cases where deciphering the smali code by hand is too much, I like to cross-check the files with <code class="highlighter-rouge">bytecode-viewer</code> to get a high-level
+view in Java, and then edit the interesting part in the smali version.</p>
 
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apktool d hushed_original.apk
+</code></pre></div></div>
 
+<h1 id="search-for-easy-killswitches">Search for easy killswitches</h1>
 
+<p>On my first trial, I immediately jumped into deleting <code class="highlighter-rouge">com.firebase.analytics</code> and some of it’s callers from the main <code class="highlighter-rouge">HushedApp.smali</code> activities
+and I had to realize quickly that this package had a <strong>lot</strong> of callers, and also used by other dependencies. The naive “replace every init call with stubs”
+method will quickly lead to Runtime Exceptions this way.</p>
 
-<li><a href="/posts/Privacy-in-the-covid-drama/" title="Your Social distancing is a surface for social engineering">Privacy thoughts in the covid drama</a></li>
+<p>Then I was looking for one-liner killswitches as I expected that these SDKs have to offer a way to save their backend from pollution by debug builds.</p>
 
+<p>My feeling was right, as firebase and facebook both offer <code class="highlighter-rouge">meta-data</code> tags that disable remote communication:</p>
 
+<div class="language-xml highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nt">&lt;meta-data</span> <span class="na">android:name=</span><span class="s">"firebase_analytics_collection_deactivated"</span>
+          	<span class="na">android:value=</span><span class="s">"true"</span><span class="nt">/&gt;</span>
+<span class="nt">&lt;meta-data</span> <span class="na">android:name=</span><span class="s">"google_analytics_adid_collection_enabled"</span>
+			<span class="na">android:value=</span><span class="s">"false"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;meta-data</span> <span class="na">android:name=</span><span class="s">"google_analytics_ssaid_collection_enabled"</span> 
+			<span class="na">android:value=</span><span class="s">"false"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;meta-data</span> <span class="na">android:name=</span><span class="s">"google_analytics_default_allow_ad_personalization_signals"</span> 
+			<span class="na">android:value=</span><span class="s">"false"</span> <span class="nt">/&gt;</span>
+</code></pre></div></div>
 
+<h1 id="adjust">Adjust</h1>
 
+<p>For Adjust analytics I didn’t find an easy manifest-level killswitch or a flag inside <code class="highlighter-rouge">values.xml</code> so I had to check out their API.
+I looked for signature calls on <a href="https://github.com/adjust/android_sdk#qs-basic-setup">their github</a> and found that in all cases
+I should see a constructor of <code class="highlighter-rouge">AdjustConfig</code> and a manual call to the static <code class="highlighter-rouge">Adjust.onCreate</code> (lol?).</p>
 
-<li><a href="/posts/The-exotic-world-of-quantum-crypto/" title="The quantum problem is here, and even if it wouldn't you still want to benefit from it.">The exotic world of post-quantum crypto</a></li>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">grep</span> <span class="nt">-R</span> AdjustConfig
+</code></pre></div></div>
 
+<p>Thankfully only <code class="highlighter-rouge">com.hushed.base.core.HushedApp</code> used it and it was not subject to ProGuard:</p>
 
+<pre><code class="language-smali">.method private m0()V
+    .locals 3
+    :try_start_0
+    new-instance v0, Lcom/adjust/sdk/AdjustConfig;
+    const-string v1, "b2ssal02vdvk"
+    sget-object v2, Lg/e/a/a;-&gt;a:Ljava/lang/Boolean;
+    invoke-virtual {v2}, Ljava/lang/Boolean;-&gt;booleanValue()Z
+    move-result v2
+    if-eqz v2, :cond_0
+    const-string v2, "sandbox"
+    goto :goto_0
+    :cond_0
+    const-string v2, "production"
+    :goto_0
+    invoke-direct {v0, p0, v1, v2}, Lcom/adjust/sdk/AdjustConfig;-&gt;&lt;init&gt;(Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;)V
+    invoke-static {v0}, Lcom/adjust/sdk/Adjust;-&gt;onCreate(Lcom/adjust/sdk/AdjustConfig;)V
+    new-instance v0, Lcom/hushed/base/core/HushedApp$g;
+    iget-object v1, p0, Lcom/hushed/base/core/HushedApp;-&gt;a:Lcom/hushed/base/promotions/h;
+    invoke-direct {v0, v1}, Lcom/hushed/base/core/HushedApp$g;-&gt;&lt;init&gt;(Lcom/hushed/base/promotions/h;)V
+    invoke-virtual {p0, v0}, Landroid/app/Application;-&gt;registerActivityLifecycleCallbacks(Landroid/app/Application$ActivityLifecycleCallbacks;)V
+    :try_end_0
+    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
+    goto :goto_1
+    :catch_0
+    move-exception v0
+    invoke-static {v0}, Lcom/hushed/base/core/g/b;-&gt;b(Ljava/lang/Throwable;)V
+    :goto_1
+    return-void
+.end method
+</code></pre>
 
+<p>I wasn’t sure from the documentation whether the <strong>sandbox</strong> mode would actually be offline or just send data to a different dashboard/bucket/whatever,
+so just in case I replaced the whole function with a stub:</p>
 
+<pre><code class="language-smali">.method private m0()V
+	.locals 0
+	return-void
+.end method
+</code></pre>
 
-<li><a href="/posts/I-Dont-Believe-In-SGX/" title="Security trough obscurity is a trend again">I don't believe in SGX and TEE</a></li>
+<h1 id="brazeappboy">Braze/Appboy</h1>
 
+<p>For this one I didn’t have a code sample to find the entry point so I just used my android-intuitions. I expected that I’d need an activity or even better, the application context
+and a call to a static method just like it was the case with Adjust. So I searched the splash launcher and the main activity for a function that had 
+<code class="highlighter-rouge">getApplicationContext</code> mixed with some <code class="highlighter-rouge">com.appboy.*</code> calls and eventually found this:</p>
 
+<pre><code class="language-smali">.method private n0()V
+    .locals 3
+    new-instance v0, Lcom/appboy/d;
+    invoke-direct {v0}, Lcom/appboy/d;-&gt;&lt;init&gt;()V
+    invoke-virtual {p0, v0}, Landroid/app/Application;-&gt;registerActivityLifecycleCallbacks(Landroid/app/Application$ActivityLifecycleCallbacks;)V
+    new-instance v0, Lcom/hushed/base/core/util/t;
+    invoke-virtual {p0}, Landroid/app/Application;-&gt;getApplicationContext()Landroid/content/Context;
+    move-result-object v1
+    invoke-direct {v0, v1}, Lcom/hushed/base/core/util/t;-&gt;&lt;init&gt;(Landroid/content/Context;)V
+    invoke-static {}, Lcom/appboy/ui/inappmessage/AppboyInAppMessageManager;-&gt;getInstance()Lcom/appboy/ui/inappmessage/AppboyInAppMessageManager;
+    move-result-object v1
+    invoke-virtual {v1, v0}, Lcom/appboy/ui/inappmessage/AppboyInAppMessageManagerBase;-&gt;setCustomInAppMessageManagerListener(Lcom/appboy/ui/inappmessage/listeners/IInAppMess
+ageManagerListener;)V
+    new-instance v0, Lcom/appboy/l/a$b;
+    invoke-direct {v0}, Lcom/appboy/l/a$b;-&gt;&lt;init&gt;()V
+    invoke-virtual {p0}, Landroid/app/Application;-&gt;getResources()Landroid/content/res/Resources;
+    move-result-object v1
+    const v2, 0x7f13004e
+    invoke-virtual {v1, v2}, Landroid/content/res/Resources;-&gt;getString(I)Ljava/lang/String;
+    move-result-object v1
+    invoke-virtual {v0, v1}, Lcom/appboy/l/a$b;-&gt;D(Ljava/lang/String;)Lcom/appboy/l/a$b;
+    invoke-virtual {p0}, Landroid/app/Application;-&gt;getResources()Landroid/content/res/Resources;
+    move-result-object v1
+	const v2, 0x7f13004d
+    invoke-virtual {v1, v2}, Landroid/content/res/Resources;-&gt;getString(I)Ljava/lang/String;
+    move-result-object v1
+    invoke-virtual {v0, v1}, Lcom/appboy/l/a$b;-&gt;C(Ljava/lang/String;)Lcom/appboy/l/a$b;
+    invoke-virtual {v0}, Lcom/appboy/l/a$b;-&gt;k()Lcom/appboy/l/a;
+    move-result-object v0
+    invoke-static {p0, v0}, Lcom/appboy/a;-&gt;w(Landroid/content/Context;Lcom/appboy/l/a;)Z
+    return-void
+.end method
+</code></pre>
 
+<p>Now I only needed to insert a call to <code class="highlighter-rouge">disableSdk</code> right efter we got the context. According to the documentation:</p>
 
+<p><strong>In order to comply with data privacy regulations, data tracking activity on the Android SDK can be stopped entirely using the method disableSDK() . This method will cause all network connections to be canceled, and the Braze SDK will not pass any data to Braze’s servers.</strong></p>
 
-<li><a href="/posts/Leave-Bernstein-alone/" title="On how ristretto addressed a problem that we intentionally fell into">Leave Bernstein alone!</a></li>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>...
+invoke-virtual {p0}, Landroid/app/Application;-&gt;getApplicationContext()Landroid/content/Context;
+move-result-object v1
+invoke-static {v1}, Lcom.appboy;-&gt;disableSdk(Landroid/content/Context;)V
+invoke-direct {v0, v1}, Lcom/hushed/base/core/util/t;-&gt;&lt;init&gt;(Landroid/content/Context;)V
+...
+</code></pre></div></div>
 
+<h1 id="recompiling">Recompiling</h1>
 
+<p>Rebuilding itself is easy, just make sure to use <code class="highlighter-rouge">--use-aapt</code> with apktool as newer apps use aapt2 now:</p>
 
-</ul>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apktool b --use-aapt2 -o hushed_mod.apk hushed
+</code></pre></div></div>
 
-<h1 id="projects">$ ls projects</h1>
+<p>However, to be able to actually install and test you need to re-sign it with a self-signed key as you just
+broke the original APK signature.</p>
 
-<ul>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>keytool <span class="nt">-genkey</span> <span class="nt">-v</span> <span class="nt">-keystore</span> mykey.keystore
+jarsigner <span class="nt">-keystore</span> mykey.keystore hushed.apk mykey
+</code></pre></div></div>
 
-<li><a href="https://github.com/Silur/ZeroTwo">ZeroTwo</a> - State of the art authentication scheme with the strenght of a Klaxxosaur</li>
+<h1 id="did-it-work">Did it work?</h1>
 
-<li><a href="https://github.com/Silur/ECVRF">ECVRF</a> - An elliptic curve verifiable random function</li>
+<p>To see whether my phone is actually free from facebook/google malware I made an AP on my linux machine and fired up wireshark.
+I was looking for hosts from <a href="https://github.com/StevenBlack/hosts">StevenBlack’s</a> repo and first I was dissapointed because I did see some
+requests going out to facebook, but thankfully it was the embedded login assets in the LoginActivity. I did see the logcat msg I was waiting for from firebase too:</p>
 
-<li><a href="https://github.com/Silur/SIS-gadget">SIS-gadget</a> - Joint effort with Matter Labs (https://matter-labs.io/) to make a ZK-friendly hash accumulator </li>
+<p><code class="highlighter-rouge">I/FA: Collection disabled with firebase_analytics_collection_deactivated=1</code></p>
 
-<li><a href="https://github.com/Silur/steganio">Stegan.io</a> - Simple F5 Steganograpy in your browser https://www.stegan.io/</li>
-
-<li><a href="https://eprint.iacr.org/2018/1231"> Post-quantum verifiable random functions from ring signatures</a> - An iacr publication on how to construct quantum-resistant VRFs</li>
-
-<li><a href="https://github.com/Silur/vecna">vecna</a> - A simple tool for Fiat-shamir secret sharing</li>
-
-<li><a href="https://github.com/Silur/libecies">libecies</a> - A minimalistic curve25519 ECIES library for P2P apps</li>
-
-<li><a href="https://github.com/Silur/libstringct">libstringct</a> - RTRS RingCT library based on the research of monero lab https://lab.getmonero.org/</li>
-
-</ul>
 
 		</main>
 		<footer>
+
+	<div id="disqus_thread"></div>
+<script type="text/javascript">
+    /* * * CONFIGURATION VARIABLES * * */
+    var disqus_shortname = '';
+    var disqus_config = function () {
+        this.page.identifier = "/posts/Modding-an-apk-to-disable-tracking/";
+    };
+    
+    /* * * DON'T EDIT BELOW THIS LINE * * */
+    (function() {
+        var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+        dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+</script>
+<noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a></noscript>
+
+
+
 
 </footer>
 
